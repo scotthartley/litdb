@@ -2,9 +2,10 @@ class DB_dict(dict):
     """Subclass of dict that automates data retrieval to allow overrides.
     """
 
-    MULTICHAR_INITIALS = ["Md", "Wm"]
     CR_KEY = 'crossref'
     OV_KEY = 'override'
+    ERROR_STRING = "MISSING DATA"
+    MULTICHAR_INITIALS = ["Md", "Wm"]
 
     def override(self, key):
         if DB_dict.OV_KEY in self:
@@ -17,17 +18,11 @@ class DB_dict(dict):
 
     @property
     def title(self):
-        if 'title' in self[DB_dict.CR_KEY]:
-            return self.override('title')
-        else:
-            return None
+        return self.override('title')
 
     @property
     def journal(self):
-        if 'journal' in self[DB_dict.CR_KEY]:
-            return self.override('journal')
-        else:
-            return None
+        return self.override('journal')
 
     @property
     def authors(self):
@@ -37,13 +32,23 @@ class DB_dict(dict):
                 authors[n]['given_name'] = (
                         self.add_initial_periods(authors[n]['given_name']))
             return authors
+        else:
+            return None
 
     @property
     def pages(self):
-        if 'pages' in self[DB_dict.CR_KEY]:
-            return self.override('pages')
+        return self.override('pages')
+
+    @property
+    def year(self):
+        return self.override('year')
+
+    @property
+    def finalized(self):
+        if self.year and self.pages:
+            return True
         else:
-            return None
+            return False
 
     @staticmethod
     def parse_cr(cr_results):

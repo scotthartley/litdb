@@ -5,9 +5,6 @@ import sys
 from .DB_dict import DB_dict
 
 
-ERROR_STRING = "MISSING DATA"
-
-
 def update_from_cr(config):
     """Retrieve records from Crossref.
     """
