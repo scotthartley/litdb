@@ -16,7 +16,15 @@ def update_from_cr(config):
             sort=config['settings']['sort_field'],
             order=config['settings']['order'],
             limit=config['settings']['num_records'])
-    return DB_dict.parse_cr(cr_results)
+    return DB_dict.parse_cr(cr_results['message']['items'])
+
+
+def add_doi(doi, config):
+    """Retrieve an article by doi.
+    """
+    crossref = Crossref(mailto=config['settings']['email'])
+    cr_result = crossref.works(ids=[doi])
+    return DB_dict.parse_cr([cr_result['message']])
 
 
 def main():
@@ -27,6 +35,9 @@ def main():
     parser.add_argument(
         "db_file",
         help="Database file name")
+    parser.add_argument(
+        "--doi",
+        help="DOI to be added to database")
     args = parser.parse_args()
 
     try:
@@ -43,9 +54,12 @@ def main():
     except FileNotFoundError:
         db = {}
 
-    retrieved_records = update_from_cr(configuration)
-
-    db = DB_dict.merge_dbs(retrieved_records, db)
+    if args.doi:
+        retrieved_record = add_doi(args.doi, configuration)
+        db = DB_dict.merge_dbs(retrieved_record, db)
+    else:
+        retrieved_records = update_from_cr(configuration)
+        db = DB_dict.merge_dbs(retrieved_records, db)
 
     with open(args.db_file, 'w') as db_file:
         print(yaml.dump(db), file=db_file)

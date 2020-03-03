@@ -56,7 +56,7 @@ class DB_dict(dict):
         fields.
         """
         records = {}
-        for r in cr_results['message']['items']:
+        for r in cr_results:
             record = DB_dict()
             record[DB_dict.CR_KEY] = {}
 
@@ -105,10 +105,8 @@ class DB_dict(dict):
     def merge_dbs(new_records, db):
         """Update records in list of DB_dict with new records.
         """
-
         for a in new_records:
             if a not in db:
                 db[a] = DB_dict()
             db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
-
         return db
