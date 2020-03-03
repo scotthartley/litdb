@@ -56,10 +56,14 @@ def main():
 
     if args.doi:
         retrieved_record = add_doi(args.doi, configuration)
-        db = DB_dict.merge_dbs(retrieved_record, db)
+        db, num_additions, num_updates = DB_dict.merge_dbs(
+                retrieved_record, db)
     else:
         retrieved_records = update_from_cr(configuration)
-        db = DB_dict.merge_dbs(retrieved_records, db)
+        db, num_additions, num_updates = DB_dict.merge_dbs(
+                retrieved_records, db)
+
+    print(f"{num_additions} records added, {num_updates} records updated.")
 
     with open(args.db_file, 'w') as db_file:
         print(yaml.dump(db), file=db_file)

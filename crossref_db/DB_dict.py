@@ -105,8 +105,14 @@ class DB_dict(dict):
     def merge_dbs(new_records, db):
         """Update records in list of DB_dict with new records.
         """
+        num_additions = 0
+        num_updates = 0
         for a in new_records:
             if a not in db:
                 db[a] = DB_dict()
-            db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
-        return db
+                db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
+                num_additions += 1
+            elif new_records[a][DB_dict.CR_KEY] != db[a][DB_dict.CR_KEY]:
+                db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
+                num_updates += 1
+        return db, num_additions, num_updates
