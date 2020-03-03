@@ -68,6 +68,9 @@ class DB_dict(dict):
                 author = {}
                 author['family_name'] = a['family']
                 author['given_name'] = a['given']
+                author['affiliation'] = [i['name'] for i in a['affiliation']]
+                if 'ORCID' in a:
+                    author['orcid'] = a['ORCID']
                 record[DB_dict.CR_KEY]['authors'].append(author)
 
             if 'published-print' in r:
@@ -102,19 +105,37 @@ class DB_dict(dict):
         return " ".join(names)
 
     @staticmethod
-    def merge_dbs(new_records, db, journal_blacklist=[]):
+    def merge_dbs(new_records, db, journal_blacklist=[], affiliation=""):
         """Update records in list of DB_dict with new records.
         """
+
+        def flatten(l):
+            """https://stackoverflow.com/questions/952914/how-to-make-a-flat-list-out-of-list-of-lists
+            """
+            flat_list = []
+            for sublist in l:
+                for item in sublist:
+                    flat_list.append(item)
+            return flat_list
+
         num_additions = 0
         num_updates = 0
-        for a in new_records:
-            if a not in db:
-                if (new_records[a][DB_dict.CR_KEY]['journal']
-                        not in journal_blacklist):
-                    db[a] = DB_dict()
-                    db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
+        for doi in new_records:
+            if doi not in db:
+                all_affiliations = flatten(
+                        [j['affiliation'] for j in
+                            new_records[doi][DB_dict.CR_KEY]['authors']])
+                correct_affiliation = False
+                for a in all_affiliations:
+                    if affiliation in a:
+                        correct_affiliation = True
+                correct_journal = (new_records[doi][DB_dict.CR_KEY]['journal']
+                                   not in journal_blacklist)
+                if correct_affiliation and correct_journal:
+                    db[doi] = DB_dict()
+                    db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
                     num_additions += 1
-            elif new_records[a][DB_dict.CR_KEY] != db[a][DB_dict.CR_KEY]:
-                db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
+            elif new_records[doi][DB_dict.CR_KEY] != db[doi][DB_dict.CR_KEY]:
+                db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
                 num_updates += 1
         return db, num_additions, num_updates

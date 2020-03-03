@@ -57,11 +57,12 @@ def main():
     if args.doi:
         retrieved_record = add_doi(args.doi, configuration)
         db, num_additions, num_updates = DB_dict.merge_dbs(
-                retrieved_record, db, configuration['journal-blacklist'])
+                retrieved_record, db)
     else:
         retrieved_records = update_from_cr(configuration)
         db, num_additions, num_updates = DB_dict.merge_dbs(
-                retrieved_records, db, configuration['journal-blacklist'])
+                retrieved_records, db, configuration['journal-blacklist'],
+                configuration['affiliation'])
 
     print(f"{num_additions} records added, {num_updates} records updated.")
 
