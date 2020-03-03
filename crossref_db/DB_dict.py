@@ -102,16 +102,18 @@ class DB_dict(dict):
         return " ".join(names)
 
     @staticmethod
-    def merge_dbs(new_records, db):
+    def merge_dbs(new_records, db, journal_blacklist=[]):
         """Update records in list of DB_dict with new records.
         """
         num_additions = 0
         num_updates = 0
         for a in new_records:
             if a not in db:
-                db[a] = DB_dict()
-                db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
-                num_additions += 1
+                if (new_records[a][DB_dict.CR_KEY]['journal']
+                        not in journal_blacklist):
+                    db[a] = DB_dict()
+                    db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
+                    num_additions += 1
             elif new_records[a][DB_dict.CR_KEY] != db[a][DB_dict.CR_KEY]:
                 db[a][DB_dict.CR_KEY] = new_records[a][DB_dict.CR_KEY]
                 num_updates += 1
