@@ -76,7 +76,8 @@ class DB_dict(dict):
             for a in r['author']:
                 author = {}
                 author['family_name'] = a['family']
-                author['given_name'] = a['given']
+                if 'given' in a:
+                    author['given_name'] = a['given']
                 author['affiliation'] = [i['name'] for i in a['affiliation']]
                 if 'ORCID' in a:
                     author['orcid'] = a['ORCID']
@@ -97,6 +98,8 @@ class DB_dict(dict):
 
             if 'page' in r:
                 record[DB_dict.CR_KEY]['pages'] = r['page']
+            elif 'article-number' in r:
+                record[DB_dict.CR_KEY]['pages'] = r['article-number']
             elif 'issue' in r:
                 record[DB_dict.CR_KEY]['pages'] = DB_dict.ERROR_STRING
 
@@ -143,9 +146,12 @@ class DB_dict(dict):
                         [j['affiliation'] for j in
                             new_records[doi][DB_dict.CR_KEY]['authors']])
                 correct_affiliation = False
-                for a in all_affiliations:
-                    if affiliation in a:
-                        correct_affiliation = True
+                if len(all_affiliations) == 0:
+                    correct_affiliation = True
+                else:
+                    for a in all_affiliations:
+                        if affiliation in a:
+                            correct_affiliation = True
                 correct_journal = (new_records[doi][DB_dict.CR_KEY]['journal']
                                    not in journal_blacklist)
                 if correct_affiliation and correct_journal:
