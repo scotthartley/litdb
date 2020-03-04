@@ -19,12 +19,15 @@ def update_from_cr(config):
     return DB_dict.parse_cr(cr_results['message']['items'])
 
 
-def add_doi(doi, config):
+def get_doi(dois, config):
     """Retrieve an article by doi.
     """
     crossref = Crossref(mailto=config['settings']['email'])
-    cr_result = crossref.works(ids=[doi])
-    return DB_dict.parse_cr([cr_result['message']])
+    cr_result = crossref.works(ids=dois)
+    if len(dois) == 1:
+        return DB_dict.parse_cr([cr_result['message']])
+    else:
+        return DB_dict.parse_cr([c['message'] for c in cr_result])
 
 
 def main():
@@ -55,14 +58,25 @@ def main():
         db = {}
 
     if args.doi:
-        retrieved_record = add_doi(args.doi, configuration)
+        retrieved_record = get_doi([args.doi], configuration)
         db, num_additions, num_updates = DB_dict.merge_dbs(
                 retrieved_record, db)
     else:
         retrieved_records = update_from_cr(configuration)
-        db, num_additions, num_updates = DB_dict.merge_dbs(
+        dois_to_check = []
+        for doi in db:
+            if not db[doi].finalized:
+                dois_to_check.append(doi)
+
+        db, num_additions, num_updates_new = DB_dict.merge_dbs(
                 retrieved_records, db, configuration['journal-blacklist'],
                 configuration['affiliation'])
+
+        updated_records = get_doi(dois_to_check, configuration)
+        db, _, num_updates_old = DB_dict.merge_dbs(
+                updated_records, db, configuration['journal-blacklist'],
+                configuration['affiliation'])
+        num_updates = num_updates_new + num_updates_old
 
     print(f"{num_additions} records added, {num_updates} records updated.")
 

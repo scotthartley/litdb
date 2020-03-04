@@ -44,6 +44,10 @@ class DB_dict(dict):
         return self.override('year')
 
     @property
+    def volume(self):
+        return self.override('volume')
+
+    @property
     def finalized(self):
         if self.year and self.pages:
             return True
