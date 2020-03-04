@@ -41,7 +41,12 @@ class DB_dict(dict):
 
     @property
     def year(self):
-        return self.override('year')
+        if self.override('published-print'):
+            return self.override('published-print')[0:4]
+        elif self.override('issued'):
+            return self.override('issued')[0:4]
+        else:
+            return None
 
     @property
     def volume(self):
@@ -78,11 +83,14 @@ class DB_dict(dict):
                 record[DB_dict.CR_KEY]['authors'].append(author)
 
             if 'published-print' in r:
-                record[DB_dict.CR_KEY]['year'] = str(
-                        r['published-print']['date-parts'][0][0])
-            elif 'issued' in r:
-                record[DB_dict.CR_KEY]['year'] = str(
-                        r['issued']['date-parts'][0][0])
+                record[DB_dict.CR_KEY]['published-print'] = "-".join(
+                        [str(x) for x in r['published-print']['date-parts'][0]])
+            if 'issued' in r:
+                record[DB_dict.CR_KEY]['issued'] = "-".join(
+                        [str(x) for x in r['issued']['date-parts'][0]])
+            if 'published-online' in r:
+                record[DB_dict.CR_KEY]['published-online'] = "-".join(
+                        [str(x) for x in r['published-online']['date-parts'][0]])
 
             if 'volume' in r:
                 record[DB_dict.CR_KEY]['volume'] = r['volume']
