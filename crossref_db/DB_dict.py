@@ -102,6 +102,11 @@ class DB_dict(dict):
 
             if 'container-title' in r:
                 record[DB_dict.CR_KEY]['journal'] = r['container-title'][0]
+            if 'short-container-title' in r:
+                record[DB_dict.CR_KEY]['journal-abr'] = r['short-container-title'][0]
+
+            if 'publisher' in r:
+                record[DB_dict.CR_KEY]['publisher'] = r['publisher']
 
             records[doi] = record
         return records
