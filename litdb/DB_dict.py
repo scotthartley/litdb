@@ -20,6 +20,10 @@ class DB_dict(dict):
             return None
 
     @property
+    def doi(self):
+        return self.override('doi')
+
+    @property
     def title(self):
         return self.override('title')
 
@@ -28,7 +32,7 @@ class DB_dict(dict):
         return self.override('journal')
 
     @property
-    def authors(self):
+    def authors_list(self):
         if 'authors' in self[DB_dict.CR_KEY]:
             authors = self.override('authors')
             for n in range(len(authors)):
@@ -37,6 +41,13 @@ class DB_dict(dict):
             return authors
         else:
             return None
+
+    @property
+    def authors(self):
+        authors_list = []
+        for a in self.authors_list:
+            authors_list.append(f"{a['family_name']}, {a['given_name']}")
+        return "; ".join(authors_list)
 
     @property
     def pages(self):
@@ -83,7 +94,7 @@ class DB_dict(dict):
             record = DB_dict()
             record[DB_dict.CR_KEY] = {}
 
-            doi = r['DOI']
+            record[DB_dict.CR_KEY]['doi'] = r['DOI']
             record[DB_dict.CR_KEY]['title'] = r['title'][0]
 
             record[DB_dict.CR_KEY]['authors'] = []
@@ -126,7 +137,7 @@ class DB_dict(dict):
             if 'publisher' in r:
                 record[DB_dict.CR_KEY]['publisher'] = r['publisher']
 
-            records[doi] = record
+            records[record[DB_dict.CR_KEY]['doi']] = record
         return records
 
     @staticmethod

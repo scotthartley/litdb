@@ -4,6 +4,25 @@ import sys
 # from .DB_dict import DB_dict
 
 
+def apply_template(record, template):
+    output_elements = {}
+    for e in template['elements']:
+        replacement = getattr(record, e)
+        if replacement:
+            output_elements[e] = template['elements'][e].replace(
+                    f"{{{e}}}", replacement)
+        else:
+            output_elements[e] = ""
+
+    if record.finalized:
+        output = template['templates']['complete']
+    else:
+        output = template['templates']['incomplete']
+    for e in output_elements:
+        output = output.replace(f"{{{e}}}", output_elements[e])
+    return output
+
+
 def litdb_format():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -32,8 +51,9 @@ def litdb_format():
     outputs = []
     for doi in db:
         key = getattr(db[doi], template['sort-by'])
-        output = db[doi].title
+        output = apply_template(db[doi], template)
         outputs.append([key, output])
+    outputs = sorted(outputs)
 
-    breakpoint()
-
+    for n in outputs:
+        print(n[1])
