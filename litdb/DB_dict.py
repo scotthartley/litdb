@@ -49,6 +49,10 @@ class DB_dict(dict):
             return None
 
     @property
+    def first_published(self):
+        return self.override('published-online')
+
+    @property
     def volume(self):
         return self.override('volume')
 

@@ -30,7 +30,7 @@ def get_doi(dois, config):
         return DB_dict.parse_cr([c['message'] for c in cr_result])
 
 
-def main():
+def litdb():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "config_file",

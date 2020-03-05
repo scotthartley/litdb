@@ -18,7 +18,8 @@ setup(name='litdb',
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'litdb = litdb:main',
+              'litdb = litdb:litdb',
+              'litdb_format = litdb:litdb_format'
           ]
       },
       install_requires=["PyYAML", "habanero", "argparse"],
