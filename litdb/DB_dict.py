@@ -1,3 +1,6 @@
+from datetime import date
+
+
 class DB_dict(dict):
     """Subclass of dict that automates data retrieval to allow overrides.
     """
@@ -49,8 +52,8 @@ class DB_dict(dict):
             return None
 
     @property
-    def first_published(self):
-        return self.override('published-online')
+    def deposited(self):
+        return self.override('deposited')
 
     @property
     def volume(self):
@@ -68,6 +71,13 @@ class DB_dict(dict):
         """Given a set of raw cr_results, converts into a dictionary of key
         fields.
         """
+
+        def convert_date(imported_date):
+            if len(imported_date) == 3:
+                return date(*imported_date).isoformat()
+            else:
+                return str(imported_date[0])
+
         records = {}
         for r in cr_results:
             record = DB_dict()
@@ -88,14 +98,15 @@ class DB_dict(dict):
                 record[DB_dict.CR_KEY]['authors'].append(author)
 
             if 'published-print' in r:
-                record[DB_dict.CR_KEY]['published-print'] = "-".join(
-                        [str(x) for x in r['published-print']['date-parts'][0]])
+                record[DB_dict.CR_KEY]['published-print'] = convert_date(
+                        r['published-print']['date-parts'][0])
             if 'issued' in r:
-                record[DB_dict.CR_KEY]['issued'] = "-".join(
-                        [str(x) for x in r['issued']['date-parts'][0]])
+                record[DB_dict.CR_KEY]['issued'] = convert_date(
+                        r['issued']['date-parts'][0])
             if 'published-online' in r:
-                record[DB_dict.CR_KEY]['published-online'] = "-".join(
-                        [str(x) for x in r['published-online']['date-parts'][0]])
+                record[DB_dict.CR_KEY]['published-online'] = convert_date(
+                        r['published-online']['date-parts'][0])
+            record[DB_dict.CR_KEY]['deposited'] = r['deposited']['date-time']
 
             if 'volume' in r:
                 record[DB_dict.CR_KEY]['volume'] = r['volume']
