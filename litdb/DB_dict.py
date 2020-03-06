@@ -25,7 +25,8 @@ class DB_dict(dict):
 
     @property
     def title(self):
-        return self.override('title')
+        # Removes extra whitespace and newlines.
+        return " ".join(self.override('title').split())
 
     @property
     def journal(self):
@@ -74,6 +75,14 @@ class DB_dict(dict):
     def finalized(self):
         if self.year and self.pages:
             return True
+        else:
+            return False
+
+    @property
+    def omit(self):
+        if DB_dict.OV_KEY in self:
+            if 'omit' in self[DB_dict.OV_KEY]:
+                return self[DB_dict.OV_KEY]['omit']
         else:
             return False
 

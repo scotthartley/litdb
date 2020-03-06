@@ -50,9 +50,10 @@ def litdb_format():
 
     outputs = []
     for doi in db:
-        key = getattr(db[doi], template['sort-by'])
-        output = apply_template(db[doi], template)
-        outputs.append([key, output])
+        if not db[doi].omit:
+            key = getattr(db[doi], template['sort-by'])
+            output = apply_template(db[doi], template)
+            outputs.append([key, output])
     outputs = sorted(outputs)
 
     for n in outputs:
