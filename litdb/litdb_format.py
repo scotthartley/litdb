@@ -20,7 +20,7 @@ def apply_template(record, template):
         output = template['templates']['incomplete']
     for e in output_elements:
         output = output.replace(f"{{{e}}}", output_elements[e])
-    return output
+    return output.encode('ascii', 'xmlcharrefreplace').decode('ascii')
 
 
 def litdb_format():

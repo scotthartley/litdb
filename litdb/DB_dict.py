@@ -52,7 +52,11 @@ class DB_dict(dict):
 
     @property
     def pages(self):
-        return self.override('pages')
+        if 'pages' in self[DB_dict.CR_KEY]:
+            if self[DB_dict.CR_KEY]['pages'] not in self.doi:
+                return self.override('pages').replace("-", "–")
+        else:
+            return None
 
     @property
     def year(self):
