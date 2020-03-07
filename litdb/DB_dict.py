@@ -142,9 +142,9 @@ class DB_dict(dict):
 
             if 'page' in r:
                 record[DB_dict.CR_KEY]['pages'] = r['page']
-            elif 'article-number' in r:
+            elif 'article-number' in r and 'published-print' in r:
                 record[DB_dict.CR_KEY]['pages'] = r['article-number']
-            elif 'issue' in r:
+            elif 'issue' in r or 'published-print' in r:
                 record[DB_dict.CR_KEY]['pages'] = DB_dict.ERROR_STRING
 
             if 'container-title' in r:
