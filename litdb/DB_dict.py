@@ -53,7 +53,7 @@ class DB_dict(dict):
     @property
     def pages(self):
         if 'pages' in self[DB_dict.CR_KEY]:
-            if self[DB_dict.CR_KEY]['pages'] not in self.doi:
+            if self.doi not in self[DB_dict.CR_KEY]['pages']:
                 return self.override('pages').replace("-", "–")
         else:
             return None

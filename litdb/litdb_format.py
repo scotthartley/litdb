@@ -20,6 +20,7 @@ def apply_template(record, template):
         output = template['templates']['incomplete']
     for e in output_elements:
         output = output.replace(f"{{{e}}}", output_elements[e])
+
     return output.encode('ascii', 'xmlcharrefreplace').decode('ascii')
 
 
@@ -72,7 +73,7 @@ def litdb_format():
             outputs[f] = outputs[f][:template['filters'][f]['max_records']]
 
     for f in outputs:
-        print()
-        print(f)
-        for n in outputs[f]:
-            print(n[1])
+        output_filename = f"{args.db_file}_{f}.{template['file_extension']}"
+        with open(output_filename, 'w') as output_file:
+            for n in outputs[f]:
+                print(n[1], file=output_file)
