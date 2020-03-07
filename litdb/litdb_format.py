@@ -48,13 +48,31 @@ def litdb_format():
         print("A database file must be provided.")
         sys.exit()
 
-    outputs = []
-    for doi in db:
-        if not db[doi].omit:
-            key = getattr(db[doi], template['sort-by'])
-            output = apply_template(db[doi], template)
-            outputs.append([key, output])
-    outputs = sorted(outputs)
+    outputs = {}
+    for f in template['filters']:
+        outputs[f] = []
+        for doi in db:
+            if not db[doi].omit:
+                if 'property' in template['filters'][f]:
+                    target_field = template['filters'][f]['property']
+                    target_value = str(template['filters'][f]['value'])
+                    if target_value in getattr(db[doi], target_field):
+                        key = getattr(db[doi], template['filters'][f]['sort_by'])
+                        output = apply_template(db[doi], template)
+                        outputs[f].append([key, output])
+                else:
+                    key = getattr(db[doi], template['filters'][f]['sort_by'])
+                    output = apply_template(db[doi], template)
+                    outputs[f].append([key, output])
+        if template['filters'][f]['sort_order'] == 'reverse':
+            outputs[f] = sorted(outputs[f], reverse=True)
+        else:
+            outputs[f] = sorted(outputs[f], reverse=False)
+        if 'max_records' in template['filters'][f]:
+            outputs[f] = outputs[f][:template['filters'][f]['max_records']]
 
-    for n in outputs:
-        print(n[1])
+    for f in outputs:
+        print()
+        print(f)
+        for n in outputs[f]:
+            print(n[1])

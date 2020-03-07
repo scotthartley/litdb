@@ -65,11 +65,15 @@ class DB_dict(dict):
         elif self.override('issued'):
             return self.override('issued')[0:4]
         else:
-            return None
+            return self['created'][0:4]
 
     @property
     def deposited(self):
         return self.override('deposited')
+
+    @property
+    def created(self):
+        return self.override('created')
 
     @property
     def volume(self):
@@ -77,7 +81,7 @@ class DB_dict(dict):
 
     @property
     def finalized(self):
-        if self.year and self.pages:
+        if self.pages:
             return True
         else:
             return False
@@ -131,6 +135,7 @@ class DB_dict(dict):
                 record[DB_dict.CR_KEY]['published-online'] = convert_date(
                         r['published-online']['date-parts'][0])
             record[DB_dict.CR_KEY]['deposited'] = r['deposited']['date-time']
+            record[DB_dict.CR_KEY]['created'] = r['created']['date-time']
 
             if 'volume' in r:
                 record[DB_dict.CR_KEY]['volume'] = r['volume']
