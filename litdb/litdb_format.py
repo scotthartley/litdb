@@ -1,10 +1,12 @@
 import argparse
 import yaml
 import sys
-# from .DB_dict import DB_dict
 
 
 def apply_template(record, template):
+    """Apply a template defined in template to a record. The template
+    must include versions for complete and incomplete records.
+    """
     output_elements = {}
     for e in template['elements']:
         replacement = getattr(record, e)
@@ -40,28 +42,35 @@ def litdb_format():
                                  Loader=yaml.FullLoader)
     except FileNotFoundError:
         print("A template file must be provided.")
-        sys.exit()
+        sys.exit(1)
 
     try:
         with open(args.db_file) as db_file:
             db = yaml.load(db_file.read(), Loader=yaml.FullLoader)
     except FileNotFoundError:
         print("A database file must be provided.")
-        sys.exit()
+        sys.exit(1)
 
+    # Generate output for every filter defined in the template. Stored
+    # as a dictionary with the (unique) filter name as the key.
     outputs = {}
     for f in template['filters']:
         outputs[f] = []
         for doi in db:
             if not db[doi].omit:
                 if 'property' in template['filters'][f]:
+                    # The filter has defined a property that will be
+                    # used to filter.
                     target_field = template['filters'][f]['property']
                     target_value = str(template['filters'][f]['value'])
                     if target_value in getattr(db[doi], target_field):
-                        key = getattr(db[doi], template['filters'][f]['sort_by'])
+                        key = getattr(db[doi],
+                                      template['filters'][f]['sort_by'])
                         output = apply_template(db[doi], template)
                         outputs[f].append([key, output])
                 else:
+                    # The filter uses all records (i.e., outputs all records,
+                    # possibly to limit to a certain number of most recent).
                     key = getattr(db[doi], template['filters'][f]['sort_by'])
                     output = apply_template(db[doi], template)
                     outputs[f].append([key, output])
@@ -72,6 +81,7 @@ def litdb_format():
         if 'max_records' in template['filters'][f]:
             outputs[f] = outputs[f][:template['filters'][f]['max_records']]
 
+    # Write all of the files.
     for f in outputs:
         output_filename = f"{args.db_file}_{f}.{template['file_extension']}"
         with open(output_filename, 'w') as output_file:

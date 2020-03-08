@@ -2,7 +2,8 @@ from datetime import date
 
 
 class DB_dict(dict):
-    """Subclass of dict that automates data retrieval to allow overrides.
+    """Subclass of dict that automates data retrieval to allow
+    overrides. Used to store records retrieved from Crossref.
     """
 
     CR_KEY = 'crossref'
@@ -34,17 +35,21 @@ class DB_dict(dict):
 
     @property
     def authors_list(self):
+        """Returns the authors as a list.
+        """
         if 'authors' in self[DB_dict.CR_KEY]:
             authors = self.override('authors')
             for n in range(len(authors)):
                 authors[n]['given_name'] = (
-                        self.add_initial_periods(authors[n]['given_name']))
+                        DB_dict.add_initial_periods(authors[n]['given_name']))
             return authors
         else:
             return None
 
     @property
     def authors(self):
+        """Returns the authors as a formatted string.
+        """
         authors_list = []
         for a in self.authors_list:
             authors_list.append(f"{a['family_name']}, {a['given_name']}")
@@ -60,6 +65,10 @@ class DB_dict(dict):
 
     @property
     def year(self):
+        """Returns the year published. Must always return something so
+        that records will always be included somewhere if filtered by
+        year.
+        """
         if self.override('published-print'):
             return self.override('published-print')[0:4]
         elif self.override('issued'):
@@ -81,6 +90,9 @@ class DB_dict(dict):
 
     @property
     def finalized(self):
+        """Records are considered finalized once they have pages
+        assigned.
+        """
         if self.pages:
             return True
         else:
@@ -88,6 +100,8 @@ class DB_dict(dict):
 
     @property
     def omit(self):
+        """Defines whether a record should be ignored on output.
+        """
         if DB_dict.OV_KEY in self:
             if 'omit' in self[DB_dict.OV_KEY]:
                 return self[DB_dict.OV_KEY]['omit']
@@ -96,8 +110,8 @@ class DB_dict(dict):
 
     @staticmethod
     def parse_cr(cr_results):
-        """Given a set of raw cr_results, converts into a dictionary of key
-        fields.
+        """Given a set of raw cr_results, imports as a dictionary of
+        key fields.
         """
 
         def convert_date(imported_date):
@@ -150,7 +164,8 @@ class DB_dict(dict):
             if 'container-title' in r:
                 record[DB_dict.CR_KEY]['journal'] = r['container-title'][0]
             if 'short-container-title' in r:
-                record[DB_dict.CR_KEY]['journal-abr'] = r['short-container-title'][0]
+                record[DB_dict.CR_KEY]['journal-abr'] = (
+                        r['short-container-title'][0])
 
             if 'publisher' in r:
                 record[DB_dict.CR_KEY]['publisher'] = r['publisher']
@@ -160,6 +175,11 @@ class DB_dict(dict):
 
     @staticmethod
     def add_initial_periods(name):
+        """Adds periods to the ends of initials in author names. This is
+        done on the basis of their length (i.e., 1 letter), although
+        longer initials can be defined in the the MULTICHAR_INITIALS
+        constant.
+        """
         names = name.split()
         for n in range(len(names)):
             if len(names[n]) == 1:
@@ -174,7 +194,8 @@ class DB_dict(dict):
         """
 
         def flatten(l):
-            """https://stackoverflow.com/questions/952914/how-to-make-a-flat-list-out-of-list-of-lists
+            """Flattens a list ([[a], [b], [c]] -> [a , b, c])
+            https://stackoverflow.com/questions/952914/how-to-make-a-flat-list-out-of-list-of-lists
             """
             flat_list = []
             for sublist in l:
@@ -186,6 +207,8 @@ class DB_dict(dict):
         num_updates = 0
         for doi in new_records:
             if doi not in db:
+                # First check to make sure that the article satisfies
+                # the author and affiliation requirements.
                 all_affiliations = flatten(
                         [j['affiliation'] for j in
                             new_records[doi][DB_dict.CR_KEY]['authors']])
@@ -203,6 +226,7 @@ class DB_dict(dict):
                     db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
                     num_additions += 1
             elif new_records[doi][DB_dict.CR_KEY] != db[doi][DB_dict.CR_KEY]:
+                # Update if record has changed.
                 db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
                 num_updates += 1
         return db, num_additions, num_updates

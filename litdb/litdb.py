@@ -49,12 +49,13 @@ def litdb():
                                       Loader=yaml.FullLoader)
     except FileNotFoundError:
         print("A configuration file must be provided.")
-        sys.exit()
+        sys.exit(1)
 
     try:
         with open(args.db_file) as db_file:
             db = yaml.load(db_file.read(), Loader=yaml.FullLoader)
     except FileNotFoundError:
+        # Database file is being created from scratch.
         db = {}
 
     if args.doi:
@@ -62,12 +63,14 @@ def litdb():
         db, num_additions, num_updates = DB_dict.merge_dbs(
                 retrieved_record, db)
     else:
-        retrieved_records = update_from_cr(configuration)
+        # Get new records, and check all records that are not finalized
+        # to see if there are updates.
         dois_to_check = []
         for doi in db:
             if not db[doi].finalized:
                 dois_to_check.append(doi)
 
+        retrieved_records = update_from_cr(configuration)
         db, num_additions, num_updates_new = DB_dict.merge_dbs(
                 retrieved_records, db, configuration['journal-blacklist'],
                 configuration['affiliation'])
