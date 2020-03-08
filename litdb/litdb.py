@@ -72,13 +72,11 @@ def litdb():
 
         retrieved_records = update_from_cr(configuration)
         db, num_additions, num_updates_new = DB_dict.merge_dbs(
-                retrieved_records, db, configuration['journal-blacklist'],
-                configuration['affiliation'])
+                retrieved_records, db, configuration)
 
         updated_records = get_doi(dois_to_check, configuration)
         db, _, num_updates_old = DB_dict.merge_dbs(
-                updated_records, db, configuration['journal-blacklist'],
-                configuration['affiliation'])
+                updated_records, db, configuration)
         num_updates = num_updates_new + num_updates_old
 
     print(f"{num_additions} records added, {num_updates} records updated.")

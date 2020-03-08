@@ -189,7 +189,7 @@ class DB_dict(dict):
         return " ".join(names)
 
     @staticmethod
-    def merge_dbs(new_records, db, journal_blacklist=[], affiliation=""):
+    def merge_dbs(new_records, db, config=None):
         """Update records in list of DB_dict with new records.
         """
 
@@ -203,6 +203,27 @@ class DB_dict(dict):
                     flat_list.append(item)
             return flat_list
 
+        if config:
+            if 'journal-blacklist' in config:
+                journal_blacklist = config['journal-blacklist']
+            else:
+                journal_blacklist = []
+            if 'affiliation' in config:
+                affiliation = config['affiliation']
+            else:
+                affiliation = ""
+        else:
+            journal_blacklist = []
+            affiliation = ""
+
+        # List of orcid ids for authors that must have strict
+        # affiliations.
+        strict_list = []
+        for orcid in config['authors']:
+            if 'strict' in config['authors'][orcid]:
+                if config['authors'][orcid]['strict']:
+                    strict_list.append(orcid)
+
         num_additions = 0
         num_updates = 0
         for doi in new_records:
@@ -212,15 +233,25 @@ class DB_dict(dict):
                 all_affiliations = flatten(
                         [j['affiliation'] for j in
                             new_records[doi][DB_dict.CR_KEY]['authors']])
+                # If an author is flagged as strict, record should only
+                # be added if affiliation is explicitly indicated.
+                strict = False
+                for author in new_records[doi][DB_dict.CR_KEY]['authors']:
+                    if 'orcid' in author:
+                        for orcid in strict_list:
+                            if orcid in author['orcid']:
+                                strict = True
                 correct_affiliation = False
-                if len(all_affiliations) == 0:
+                if len(all_affiliations) == 0 and not strict:
                     correct_affiliation = True
                 else:
                     for a in all_affiliations:
                         if affiliation in a:
                             correct_affiliation = True
+
                 correct_journal = (new_records[doi][DB_dict.CR_KEY]['journal']
                                    not in journal_blacklist)
+
                 if correct_affiliation and correct_journal:
                     db[doi] = DB_dict()
                     db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
