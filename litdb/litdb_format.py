@@ -85,5 +85,9 @@ def litdb_format():
     for f in outputs:
         output_filename = f"{args.db_file}_{f}.{template['file_extension']}"
         with open(output_filename, 'w') as output_file:
+            if 'header' in template:
+                print(template['header'], file=output_file)
             for n in outputs[f]:
                 print(n[1], file=output_file)
+            if 'footer' in template:
+                print(template['footer'], file=output_file)
