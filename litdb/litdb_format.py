@@ -95,7 +95,7 @@ def litdb_format():
     else:
         output_directory = Path(".")
     for f in outputs:
-        output_filename = output_directory / f"{args.db_file}_{f}.{template['file_extension']}"
+        output_filename = output_directory / f"{f}.{template['file_extension']}"
         with open(output_filename, 'w') as output_file:
             if 'header' in template:
                 print(template['header'], file=output_file)
