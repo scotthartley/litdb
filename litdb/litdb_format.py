@@ -2,6 +2,7 @@ import argparse
 import yaml
 import sys
 import re
+from pathlib import Path
 
 PATTERN = r"\{(.*)\}"
 
@@ -87,8 +88,14 @@ def litdb_format():
             outputs[f] = outputs[f][:template['filters'][f]['max_records']]
 
     # Write all of the files.
+    if 'output_directory' in template:
+        output_directory = Path(template['output_directory'])
+        if not output_directory.is_dir():
+            output_directory.mkdir(parents=True)
+    else:
+        output_directory = Path(".")
     for f in outputs:
-        output_filename = f"{args.db_file}_{f}.{template['file_extension']}"
+        output_filename = output_directory / f"{args.db_file}_{f}.{template['file_extension']}"
         with open(output_filename, 'w') as output_file:
             if 'header' in template:
                 print(template['header'], file=output_file)
