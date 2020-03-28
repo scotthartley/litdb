@@ -1,3 +1,4 @@
 litdb.egg-info/
 __pycache__/
 testing/
+dist/

@@ -22,6 +22,6 @@ setup(name='litdb',
               'litdb_format = litdb:litdb_format'
           ]
       },
-      install_requires=["PyYAML", "habanero", "argparse"],
+      install_requires=["PyYAML>=5.1", "habanero", "argparse"],
       python_requires=">=3.6",
       )
