@@ -1,6 +1,9 @@
 import argparse
 import yaml
 import sys
+import re
+
+PATTERN = r"\{(.*)\}"
 
 
 def apply_template(record, template):
@@ -9,18 +12,20 @@ def apply_template(record, template):
     """
     output_elements = {}
     for e in template['elements']:
-        replacement = getattr(record, e)
+        field = re.search(PATTERN, template['elements'][e]).group(1)
+        replacement = getattr(record, field)
         if replacement:
             output_elements[e] = template['elements'][e].replace(
-                    f"{{{e}}}", replacement)
+                    f"{{{field}}}", replacement)
         else:
-            output_elements[e] = ""
+            output_elements[field] = ""
 
     if record.finalized:
         output = template['templates']['complete']
     else:
         output = template['templates']['incomplete']
     for e in output_elements:
+        # breakpoint()
         output = output.replace(f"{{{e}}}", output_elements[e])
 
     return output.encode('ascii', 'xmlcharrefreplace').decode('ascii')
