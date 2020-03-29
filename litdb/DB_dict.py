@@ -57,6 +57,18 @@ class DB_dict(dict):
 
     @property
     def pages(self):
+        # Includes ERROR_STRING for output.
+        if 'pages' in self[DB_dict.CR_KEY]:
+            if self.doi not in self[DB_dict.CR_KEY]['pages']:
+                return self.override('pages').replace("-", "–")
+        elif self.finalized:
+            return DB_dict.ERROR_STRING
+        else:
+            return None
+
+    @property
+    def pages_raw(self):
+        # Omits the error string for output.
         if 'pages' in self[DB_dict.CR_KEY]:
             if self.doi not in self[DB_dict.CR_KEY]['pages']:
                 return self.override('pages').replace("-", "–")
@@ -89,11 +101,15 @@ class DB_dict(dict):
         return self.override('volume')
 
     @property
+    def issue(self):
+        return self.override('issue')
+
+    @property
     def finalized(self):
-        """Records are considered finalized once they have pages
-        assigned.
+        """Records are considered finalized once they have an issue or
+        pages assigned.
         """
-        if self.pages:
+        if self.issue or self.pages_raw:
             return True
         else:
             return False
@@ -154,12 +170,13 @@ class DB_dict(dict):
             if 'volume' in r:
                 record[DB_dict.CR_KEY]['volume'] = r['volume']
 
+            if 'issue' in r:
+                record[DB_dict.CR_KEY]['issue'] = r['issue']
+
             if 'page' in r:
                 record[DB_dict.CR_KEY]['pages'] = r['page']
             elif 'article-number' in r and 'published-print' in r:
                 record[DB_dict.CR_KEY]['pages'] = r['article-number']
-            elif 'issue' in r or 'published-print' in r:
-                record[DB_dict.CR_KEY]['pages'] = DB_dict.ERROR_STRING
 
             if 'container-title' in r:
                 record[DB_dict.CR_KEY]['journal'] = r['container-title'][0]
