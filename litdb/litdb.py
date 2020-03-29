@@ -39,8 +39,12 @@ def litdb():
         "db_file",
         help="Database file name")
     parser.add_argument(
-        "--doi",
+        "-ad", "--add_doi",
         help="DOI to be added to database")
+    parser.add_argument(
+        "-od", "--override_doi",
+        help="DOI, field, and value to override",
+        nargs=3, type=str)
     args = parser.parse_args()
 
     try:
@@ -58,10 +62,15 @@ def litdb():
         # Database file is being created from scratch.
         db = {}
 
-    if args.doi:
-        retrieved_record = get_doi([args.doi], configuration)
+    if args.add_doi:
+        retrieved_record = get_doi([args.add_doi], configuration)
         db, num_additions, num_updates = DB_dict.merge_dbs(
                 retrieved_record, db)
+    elif args.override_doi:
+        doi, field, value = args.override_doi
+        db[doi].add_override(field, value)
+        num_additions = 0
+        num_updates = 1
     else:
         # Get new records, and check all records that are not finalized
         # to see if there are updates.

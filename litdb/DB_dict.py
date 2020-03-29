@@ -58,7 +58,10 @@ class DB_dict(dict):
     @property
     def pages(self):
         # Includes ERROR_STRING for output.
-        if 'pages' in self[DB_dict.CR_KEY]:
+        if DB_dict.OV_KEY in self:
+            if 'pages' in self[DB_dict.OV_KEY]:
+                return self[DB_dict.OV_KEY]['pages']
+        elif 'pages' in self[DB_dict.CR_KEY]:
             if self.doi not in self[DB_dict.CR_KEY]['pages']:
                 return self.override('pages').replace("-", "–")
         elif self.finalized:
@@ -123,6 +126,14 @@ class DB_dict(dict):
                 return self[DB_dict.OV_KEY]['omit']
         else:
             return False
+
+    def add_override(self, field, value):
+        """Adds an override field to the db.
+        """
+
+        if DB_dict.OV_KEY not in self:
+            self[DB_dict.OV_KEY] = {}
+        self[DB_dict.OV_KEY][field] = value
 
     @staticmethod
     def parse_cr(cr_results):
