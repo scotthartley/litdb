@@ -65,7 +65,7 @@ def litdb():
     if args.add_doi:
         retrieved_record = get_doi([args.add_doi], configuration)
         db, num_additions, num_updates = DB_dict.merge_dbs(
-                retrieved_record, db)
+                retrieved_record, db, configuration)
     elif args.override_doi:
         doi, field, value = args.override_doi
         db[doi].add_override(field, value)
