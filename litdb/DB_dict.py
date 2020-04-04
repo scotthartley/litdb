@@ -252,8 +252,8 @@ class DB_dict(dict):
                 if config['authors'][orcid]['strict']:
                     strict_list.append(orcid)
 
-        num_additions = 0
-        num_updates = 0
+        additions = []
+        updates = []
         for doi in new_records:
             if doi not in db:
                 # First check to make sure that the article satisfies
@@ -283,9 +283,9 @@ class DB_dict(dict):
                 if correct_affiliation and correct_journal:
                     db[doi] = DB_dict()
                     db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
-                    num_additions += 1
+                    additions.append(db[doi])
             elif new_records[doi][DB_dict.CR_KEY] != db[doi][DB_dict.CR_KEY]:
                 # Update if record has changed.
                 db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
-                num_updates += 1
-        return db, num_additions, num_updates
+                updates.append(db[doi])
+        return db, additions, updates

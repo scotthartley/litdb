@@ -62,15 +62,16 @@ def litdb():
         # Database file is being created from scratch.
         db = {}
 
+    additions = []
+    updates = []
     if args.add_doi:
         retrieved_record = get_doi([args.add_doi], configuration)
-        db, num_additions, num_updates = DB_dict.merge_dbs(
+        db, additions, updates = DB_dict.merge_dbs(
                 retrieved_record, db, configuration)
     elif args.override_doi:
         doi, field, value = args.override_doi
         db[doi].add_override(field, value)
-        num_additions = 0
-        num_updates = 1
+        updates.append(db[doi])
     else:
         # Get new records, and check all records that are not finalized
         # to see if there are updates.
@@ -80,15 +81,23 @@ def litdb():
                 dois_to_check.append(doi)
 
         retrieved_records = update_from_cr(configuration)
-        db, num_additions, num_updates_new = DB_dict.merge_dbs(
+        db, additions, updates_new = DB_dict.merge_dbs(
                 retrieved_records, db, configuration)
 
         updated_records = get_doi(dois_to_check, configuration)
-        db, _, num_updates_old = DB_dict.merge_dbs(
+        db, _, updates_old = DB_dict.merge_dbs(
                 updated_records, db, configuration)
-        num_updates = num_updates_new + num_updates_old
-
-    print(f"{num_additions} records added, {num_updates} records updated.")
+        updates = updates_new + updates_old
 
     with open(args.db_file, 'w') as db_file:
         print(yaml.dump(db), file=db_file)
+
+    print(f"{len(additions)} records added, {len(updates)} records updated:")
+    if additions:
+        print("Additions:")
+        for record in additions:
+            print(f"    {record.doi}")
+    if updates:
+        print("Updates:")
+        for record in updates:
+            print(f"    {record.doi}")
