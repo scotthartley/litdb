@@ -87,17 +87,19 @@ def litdb():
         updated_records = get_doi(dois_to_check, configuration)
         db, _, updates_old = DB_dict.merge_dbs(
                 updated_records, db, configuration)
-        updates = updates_new + updates_old
+        updates = {**updates_old, **updates_new}
 
     with open(args.db_file, 'w') as db_file:
         print(yaml.dump(db), file=db_file)
 
-    print(f"{len(additions)} records added, {len(updates)} records updated:")
+    print(f"{len(additions)} records added, {len(updates)} records updated.")
     if additions:
         print("Additions:")
-        for record in additions:
-            print(f"    {record.doi}")
+        for doi in additions:
+            print(f"    {doi}")
     if updates:
         print("Updates:")
-        for record in updates:
-            print(f"    {record.doi}")
+        for doi in updates:
+            print(f"    https://dx.doi.org/{doi}")
+            for field in updates[doi]:
+                print(f"        {field}: {updates[doi][field]}")

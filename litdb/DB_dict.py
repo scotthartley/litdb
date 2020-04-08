@@ -231,6 +231,27 @@ class DB_dict(dict):
                     flat_list.append(item)
             return flat_list
 
+        def diff_dict(d1, d2):
+            """Compares two dictionaries and returns the list of keys
+            that differentiate them.
+            """
+            different_keys = set()
+
+            for key in d1:
+                if key in d2:
+                    if d1[key] != d2[key]:
+                        different_keys.add(key)
+                else:
+                    different_keys.add(key)
+            for key in d2:
+                if key in d1:
+                    if d1[key] != d2[key]:
+                        different_keys.add(key)
+                else:
+                    different_keys.add(key)
+
+            return different_keys
+
         if config:
             if 'journal-blacklist' in config:
                 journal_blacklist = config['journal-blacklist']
@@ -253,7 +274,7 @@ class DB_dict(dict):
                     strict_list.append(orcid)
 
         additions = []
-        updates = []
+        updates = {}
         for doi in new_records:
             if doi not in db:
                 # First check to make sure that the article satisfies
@@ -283,9 +304,16 @@ class DB_dict(dict):
                 if correct_affiliation and correct_journal:
                     db[doi] = DB_dict()
                     db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
-                    additions.append(db[doi])
+                    additions.append(doi)
             elif new_records[doi][DB_dict.CR_KEY] != db[doi][DB_dict.CR_KEY]:
                 # Update if record has changed.
+                changed_field_keys = diff_dict(
+                        db[doi][DB_dict.CR_KEY],
+                        new_records[doi][DB_dict.CR_KEY])
+                changes = {}
+                for key in changed_field_keys:
+                    changes[key] = (db[doi][DB_dict.CR_KEY].get(key),
+                                    new_records[doi][DB_dict.CR_KEY].get(key))
                 db[doi][DB_dict.CR_KEY] = new_records[doi][DB_dict.CR_KEY]
-                updates.append(db[doi])
+                updates[doi] = changes
         return db, additions, updates
