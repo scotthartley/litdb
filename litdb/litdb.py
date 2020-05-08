@@ -96,7 +96,7 @@ def litdb():
     if additions:
         print("Additions:")
         for doi in additions:
-            print(f"    {doi}")
+            print(f"    https://dx.doi.org/{doi}")
     if updates:
         print("Updates:")
         for doi in updates:
