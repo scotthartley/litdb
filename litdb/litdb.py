@@ -50,14 +50,14 @@ def litdb():
     try:
         with open(args.config_file) as config_file:
             configuration = yaml.load(config_file.read(),
-                                      Loader=yaml.FullLoader)
+                                      Loader=yaml.Loader)
     except FileNotFoundError:
         print("A configuration file must be provided.")
         sys.exit(1)
 
     try:
         with open(args.db_file) as db_file:
-            db = yaml.load(db_file.read(), Loader=yaml.FullLoader)
+            db = yaml.load(db_file.read(), Loader=yaml.Loader)
     except FileNotFoundError:
         # Database file is being created from scratch.
         db = {}
@@ -90,7 +90,7 @@ def litdb():
         updates = {**updates_old, **updates_new}
 
     with open(args.db_file, 'w') as db_file:
-        print(yaml.dump(db), file=db_file)
+        yaml.dump(db, db_file)
 
     print(f"{len(additions)} records added, {len(updates)} records updated.")
     if additions:

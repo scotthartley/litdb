@@ -45,14 +45,14 @@ def litdb_format():
     try:
         with open(args.template_file) as template_file:
             template = yaml.load(template_file.read(),
-                                 Loader=yaml.FullLoader)
+                                 Loader=yaml.Loader)
     except FileNotFoundError:
         print("A template file must be provided.")
         sys.exit(1)
 
     try:
         with open(args.db_file) as db_file:
-            db = yaml.load(db_file.read(), Loader=yaml.FullLoader)
+            db = yaml.load(db_file.read(), Loader=yaml.Loader)
     except FileNotFoundError:
         print("A database file must be provided.")
         sys.exit(1)
