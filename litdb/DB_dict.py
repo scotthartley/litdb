@@ -56,6 +56,14 @@ class DB_dict(dict):
         return "; ".join(authors_list)
 
     @property
+    def last_author(self):
+        """Returns the name of the final last author.
+        """
+        a = self.authors_list[-1]
+        last_author_name = f"{a['family_name']}, {a['given_name']}"
+        return last_author_name
+
+    @property
     def pages(self):
         # Includes ERROR_STRING for output.
         if DB_dict.OV_KEY in self:
