@@ -63,7 +63,7 @@ def litdb():
         db = {}
 
     additions = []
-    updates = []
+    updates = {}
     if args.add_doi:
         retrieved_record = get_doi([args.add_doi], configuration)
         db, additions, updates = DB_dict.merge_dbs(
@@ -71,7 +71,7 @@ def litdb():
     elif args.override_doi:
         doi, field, value = args.override_doi
         db[doi].add_override(field, value)
-        updates.append(db[doi])
+        updates[doi] = {field: value}
     else:
         # Get new records, and check all records that are not finalized
         # to see if there are updates.
